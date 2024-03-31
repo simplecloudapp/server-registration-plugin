@@ -12,6 +12,13 @@ allprojects {
 
     repositories {
         mavenCentral()
+        mavenLocal()
+        maven {
+            url = uri("https://oss.sonatype.org/content/repositories/snapshots")
+        }
+        maven {
+            url = uri("https://libraries.minecraft.net")
+        }
     }
 }
 
@@ -40,6 +47,16 @@ subprojects {
     tasks.test {
         useJUnitPlatform()
     }
+
+    tasks.processResources {
+        expand("version" to project.version,
+            "name" to project.name)
+    }
+}
+
+tasks.processResources {
+    expand("version" to project.version,
+        "name" to project.name)
 }
 
 tasks.test {
