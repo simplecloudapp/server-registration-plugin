@@ -19,6 +19,9 @@ allprojects {
         maven {
             url = uri("https://libraries.minecraft.net")
         }
+        maven {
+            url = uri("https://repo.papermc.io/repository/maven-public/")
+        }
     }
 }
 
