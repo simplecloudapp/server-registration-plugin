@@ -25,6 +25,6 @@ import java.util.logging.Logger
     @Subscribe
     fun handleInitialize(ignored: ProxyInitializeEvent) {
         plugin = ServerRegistrationPlugin(VelocityServerRegisterer(server))
-        plugin.start()
+        plugin.start(logger)
     }
 }
