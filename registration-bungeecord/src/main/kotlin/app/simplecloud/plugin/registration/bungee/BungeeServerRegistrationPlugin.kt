@@ -3,9 +3,10 @@ package app.simplecloud.plugin.registration.bungee
 import app.simplecloud.plugin.registration.shared.ServerRegistrationPlugin
 import net.md_5.bungee.api.ProxyServer
 import net.md_5.bungee.api.plugin.Plugin
+import java.net.InetSocketAddress
 
 class BungeeServerRegistrationPlugin: Plugin() {
-    private val plugin = ServerRegistrationPlugin(BungeeServerRegisterer())
+    private val plugin = ServerRegistrationPlugin(BungeeServerRegisterer(this))
     override fun onEnable() {
         ProxyServer.getInstance().configurationAdapter.servers.clear()
         ProxyServer.getInstance().servers.clear()
@@ -13,5 +14,13 @@ class BungeeServerRegistrationPlugin: Plugin() {
             info.serverPriority.clear()
         }
         plugin.start(ProxyServer.getInstance().logger)
+        plugin.getConfig().additionalServers.forEach {
+            val serverInfo = ProxyServer.getInstance().constructServerInfo(it.name, InetSocketAddress.createUnresolved(it.address, it.port.toInt()), it.name, false)
+            ProxyServer.getInstance().servers[it.name] = serverInfo
+        }
+    }
+
+    fun getInstance(): ServerRegistrationPlugin {
+        return plugin
     }
 }
