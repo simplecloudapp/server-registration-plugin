@@ -11,33 +11,20 @@ class BungeeServerRegisterer(private val plugin: BungeeServerRegistrationPlugin)
 
     private val registered = mutableListOf<Server>()
 
-    private val registeredFallbacks = mutableListOf<ServerInfo>()
-
     override fun getRegistered(): List<Server> {
        return registered
-    }
-
-    fun getFallbacks(): List<ServerInfo> {
-        return registeredFallbacks
-    }
-
-    init {
-        ProxyServer.getInstance().reconnectHandler = BungeeReconnectHandler(this)
     }
 
     override fun register(server: Server) {
         val id = plugin.getInstance().parseServerId(server)
         val info = ProxyServer.getInstance().constructServerInfo(id, InetSocketAddress.createUnresolved(server.ip, server.port.toInt()), server.uniqueId, server.properties.getOrDefault("proxy-restricted", "false").toBoolean())
         ProxyServer.getInstance().servers[id] = info
-        if(server.properties.getOrDefault("fallback-server", "false").toBoolean())
-            registeredFallbacks.add(info)
         registered.add(server)
     }
 
     override fun unregister(server: Server) {
         val proxy = ProxyServer.getInstance()
-        val info = proxy.servers.removeServer(server.uniqueId)
-        registeredFallbacks.remove(info)
+        proxy.servers.removeServer(server.uniqueId)
         registered.remove(server)
     }
 

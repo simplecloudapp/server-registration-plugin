@@ -6,6 +6,8 @@ import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent
 import com.velocitypowered.api.plugin.Plugin
 import com.velocitypowered.api.proxy.ProxyServer
+import com.velocitypowered.api.proxy.server.ServerInfo
+import java.net.InetSocketAddress
 import java.util.logging.Logger
 
 
@@ -24,7 +26,16 @@ import java.util.logging.Logger
     private lateinit var plugin: ServerRegistrationPlugin
     @Subscribe
     fun handleInitialize(ignored: ProxyInitializeEvent) {
-        plugin = ServerRegistrationPlugin(VelocityServerRegisterer(server))
+        server.allServers.clear()
+        plugin = ServerRegistrationPlugin(VelocityServerRegisterer(this, server))
         plugin.start(logger)
+        plugin.getConfig().additionalServers.forEach {
+            val serverInfo = ServerInfo(it.name, InetSocketAddress.createUnresolved(it.address, it.port.toInt()))
+            server.registerServer(serverInfo)
+        }
+    }
+
+    fun getInstance(): ServerRegistrationPlugin {
+        return plugin
     }
 }

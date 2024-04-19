@@ -8,6 +8,7 @@ import java.net.InetSocketAddress
 import kotlin.jvm.optionals.getOrNull
 
 class VelocityServerRegisterer(
+    private val plugin: VelocityServerRegistrationPlugin,
     private val proxy: ProxyServer
 ): ServerRegisterer {
 
@@ -16,18 +17,14 @@ class VelocityServerRegisterer(
         return servers
     }
 
-    private fun getServerName(server: Server): String {
-        return "${server.group}-${server.numericalId}"
-    }
-
     override fun register(server: Server) {
-        val info = ServerInfo(getServerName(server), InetSocketAddress.createUnresolved(server.ip, server.port.toInt()))
+        val info = ServerInfo(plugin.getInstance().parseServerId(server), InetSocketAddress.createUnresolved(server.ip, server.port.toInt()))
         proxy.registerServer(info)
         servers.add(server)
     }
 
     override fun unregister(server: Server) {
-        val registeredSerer = proxy.getServer(getServerName(server)).getOrNull() ?: return
+        val registeredSerer = proxy.getServer(plugin.getInstance().parseServerId(server)).getOrNull() ?: return
         proxy.unregisterServer(registeredSerer.serverInfo)
         servers.remove(server)
     }

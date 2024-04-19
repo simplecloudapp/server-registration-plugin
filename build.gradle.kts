@@ -22,6 +22,7 @@ allprojects {
         maven {
             url = uri("https://repo.papermc.io/repository/maven-public/")
         }
+        maven("https://buf.build/gen/maven")
     }
 }
 

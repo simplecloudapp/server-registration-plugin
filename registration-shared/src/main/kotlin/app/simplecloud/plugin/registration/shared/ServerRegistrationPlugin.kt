@@ -1,9 +1,9 @@
 package app.simplecloud.plugin.registration.shared
 
 import app.simplecloud.controller.api.Controller
-import app.simplecloud.controller.shared.proto.ServerState
-import app.simplecloud.controller.shared.proto.ServerType
 import app.simplecloud.controller.shared.server.Server
+import build.buf.gen.simplecloud.controller.v1.ServerState
+import build.buf.gen.simplecloud.controller.v1.ServerType
 import kotlinx.coroutines.*
 import org.spongepowered.configurate.kotlin.extensions.get
 import org.spongepowered.configurate.kotlin.objectMapperFactory
@@ -76,10 +76,9 @@ class ServerRegistrationPlugin(
         return toReturn
     }
 
-    @OptIn(InternalCoroutinesApi::class)
     private fun startRegistrationLoop(): Job {
         return CoroutineScope(Dispatchers.Default).launch {
-            while(NonCancellable.isActive) {
+            while(isActive) {
                 getAllChildren().thenApply { servers ->
                     //register all servers that are not registered yet
                     servers.filter { server -> !registerer.getRegistered().contains(server.uniqueId) }.forEach {
