@@ -11,28 +11,36 @@ import org.spongepowered.configurate.kotlin.toNode
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 import java.util.logging.Logger
 
 class ServerRegistrationPlugin(
+    private val logger: Logger,
+    private val dataDirectory: Path,
     private val registerer: ServerRegisterer
 ) {
-    private lateinit var logger: Logger
+
     private var config: ServerRegistrationConfig = ServerRegistrationConfig(
         ignoreServerGroups = listOf(),
         serverNamePattern = "%GROUP%-%NUMERICAL_ID%",
         additionalServers = listOf()
     )
-    fun start(logger: Logger) {
-        this.logger = logger
+
+    fun start() {
         logger.info("Initializing v3 server registration plugin...")
         Controller.connect()
         startRegistrationLoop()
-        loadConfig(File("registration-plugin", "config.yml"))
+        loadConfig(File(dataDirectory.toFile(), "config.yml"))
     }
 
     private fun getAllChildren(): CompletableFuture<List<Server>> {
-        return Controller.serverApi.getServersByType(ServerType.SERVER).thenApply { it.filter { server -> !config.ignoreServerGroups.contains(server.group) && (server.state == ServerState.AVAILABLE || server.state == ServerState.INGAME) } }
+        return Controller.serverApi.getServersByType(ServerType.SERVER).thenApply {
+            it.filter { server ->
+                !config.ignoreServerGroups.contains(server.group)
+                        && (server.state == ServerState.AVAILABLE || server.state == ServerState.INGAME)
+            }
+        }
     }
 
     private fun loadConfig(file: File) {
@@ -99,7 +107,5 @@ class ServerRegistrationPlugin(
     private fun List<Server>.contains(uniqueId: String): Boolean {
         return any { it.uniqueId == uniqueId }
     }
-
-
 
 }

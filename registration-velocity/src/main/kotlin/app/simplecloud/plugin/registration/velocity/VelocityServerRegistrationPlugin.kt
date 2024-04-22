@@ -5,9 +5,11 @@ import com.google.inject.Inject
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent
 import com.velocitypowered.api.plugin.Plugin
+import com.velocitypowered.api.plugin.annotation.DataDirectory
 import com.velocitypowered.api.proxy.ProxyServer
 import com.velocitypowered.api.proxy.server.ServerInfo
 import java.net.InetSocketAddress
+import java.nio.file.Path
 import java.util.logging.Logger
 
 
@@ -19,23 +21,31 @@ import java.util.logging.Logger
     description = "Server Registration plugin for SimpleCloud v3",
     url = "https://github.com/theSimpleCloud/server-registration-plugin"
 ) class VelocityServerRegistrationPlugin @Inject constructor(
+    @DataDirectory val dataDirectory: Path,
     private val server: ProxyServer,
     private val logger: Logger
 ) {
 
-    private lateinit var plugin: ServerRegistrationPlugin
+    val serverRegistration = ServerRegistrationPlugin(
+        logger,
+        dataDirectory,
+        VelocityServerRegisterer(this, server)
+    )
+
     @Subscribe
     fun handleInitialize(ignored: ProxyInitializeEvent) {
-        server.allServers.clear()
-        plugin = ServerRegistrationPlugin(VelocityServerRegisterer(this, server))
-        plugin.start(logger)
-        plugin.getConfig().additionalServers.forEach {
+        cleanupServers()
+        serverRegistration.start()
+        serverRegistration.getConfig().additionalServers.forEach {
             val serverInfo = ServerInfo(it.name, InetSocketAddress.createUnresolved(it.address, it.port.toInt()))
             server.registerServer(serverInfo)
         }
     }
 
-    fun getInstance(): ServerRegistrationPlugin {
-        return plugin
+    private fun cleanupServers() {
+        server.allServers.forEach {
+            server.unregisterServer(it.serverInfo)
+        }
     }
+
 }

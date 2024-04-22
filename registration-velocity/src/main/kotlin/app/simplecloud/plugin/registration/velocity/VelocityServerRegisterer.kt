@@ -18,13 +18,13 @@ class VelocityServerRegisterer(
     }
 
     override fun register(server: Server) {
-        val info = ServerInfo(plugin.getInstance().parseServerId(server), InetSocketAddress.createUnresolved(server.ip, server.port.toInt()))
+        val info = ServerInfo(plugin.serverRegistration.parseServerId(server), InetSocketAddress.createUnresolved(server.ip, server.port.toInt()))
         proxy.registerServer(info)
         servers.add(server)
     }
 
     override fun unregister(server: Server) {
-        val registeredSerer = proxy.getServer(plugin.getInstance().parseServerId(server)).getOrNull() ?: return
+        val registeredSerer = proxy.getServer(plugin.serverRegistration.parseServerId(server)).getOrNull() ?: return
         proxy.unregisterServer(registeredSerer.serverInfo)
         servers.remove(server)
     }
