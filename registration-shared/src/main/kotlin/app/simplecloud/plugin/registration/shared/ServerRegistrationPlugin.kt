@@ -1,6 +1,6 @@
 package app.simplecloud.plugin.registration.shared
 
-import app.simplecloud.controller.api.Controller
+import app.simplecloud.controller.api.ControllerApi
 import app.simplecloud.controller.shared.server.Server
 import build.buf.gen.simplecloud.controller.v1.ServerState
 import build.buf.gen.simplecloud.controller.v1.ServerType
@@ -26,16 +26,16 @@ class ServerRegistrationPlugin(
         serverNamePattern = "%GROUP%-%NUMERICAL_ID%",
         additionalServers = listOf()
     )
+    private val controllerApi = ControllerApi.create()
 
     fun start() {
         logger.info("Initializing v3 server registration plugin...")
-        Controller.connect()
         startRegistrationLoop()
         loadConfig(File(dataDirectory.toFile(), "config.yml"))
     }
 
     private fun getAllChildren(): CompletableFuture<List<Server>> {
-        return Controller.serverApi.getServersByType(ServerType.SERVER).thenApply {
+        return controllerApi.getServers().getServersByType(ServerType.SERVER).thenApply {
             it.filter { server ->
                 !config.ignoreServerGroups.contains(server.group)
                         && (server.state == ServerState.AVAILABLE || server.state == ServerState.INGAME)
