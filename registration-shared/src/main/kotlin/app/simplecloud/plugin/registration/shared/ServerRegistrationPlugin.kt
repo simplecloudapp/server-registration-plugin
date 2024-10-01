@@ -8,6 +8,7 @@ import kotlinx.coroutines.*
 import org.spongepowered.configurate.kotlin.extensions.get
 import org.spongepowered.configurate.kotlin.objectMapperFactory
 import org.spongepowered.configurate.kotlin.toNode
+import org.spongepowered.configurate.yaml.NodeStyle
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader
 import java.io.File
 import java.nio.file.Files
@@ -44,20 +45,23 @@ class ServerRegistrationPlugin(
     }
 
     private fun loadConfig(file: File) {
-        val loader = YamlConfigurationLoader.builder().file(file).defaultOptions {
-            options ->
+        val loader = YamlConfigurationLoader.builder()
+            .file(file)
+            .nodeStyle(NodeStyle.FLOW)
+            .defaultOptions { options ->
                 options.serializers {
                     it.registerAnnotatedObjects(objectMapperFactory()).build()
                 }
-        }.build()
+            }
+            .build()
         var replace = false
-        if(!file.exists()) {
+        if (!file.exists()) {
             replace = true
             Files.createDirectories(file.parentFile.toPath())
             Files.createFile(file.toPath())
         }
         val node = loader.load()
-        if(replace) {
+        if (replace) {
             config.toNode(node)
             loader.save(node)
         }
