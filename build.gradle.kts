@@ -36,11 +36,10 @@ subprojects {
     }
 
     kotlin {
-        jvmToolchain(17)
-    }
-
-    tasks.withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "17"
+        jvmToolchain(21)
+        compilerOptions {
+            apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
+        }
     }
 
     tasks.named("shadowJar", ShadowJar::class) {
@@ -65,7 +64,4 @@ tasks.processResources {
 
 tasks.test {
     useJUnitPlatform()
-}
-kotlin {
-    jvmToolchain(17)
 }
