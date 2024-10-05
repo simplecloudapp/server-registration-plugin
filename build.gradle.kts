@@ -1,5 +1,4 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     alias(libs.plugins.kotlin)
@@ -28,32 +27,28 @@ allprojects {
 
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
-    apply(plugin = "com.github.johnrengelman.shadow")
+    apply(plugin = "com.gradleup.shadow")
 
     dependencies {
         testImplementation(rootProject.libs.kotlinTest)
         implementation(rootProject.libs.kotlinJvm)
     }
 
+
     kotlin {
-        jvmToolchain(17)
+        jvmToolchain(22)
         compilerOptions {
             apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_22)
         }
     }
 
     tasks.named("shadowJar", ShadowJar::class) {
-        mergeServiceFiles()
+        dependsOn("processResources")
+        dependencies {
+            include(project(":registration-shared"))
+        }
         archiveFileName.set("${project.name}.jar")
-
-        val externalRelocatePath = "app.simplecloud.external"
-        relocate("kotlinx", "${externalRelocatePath}.kotlinx")
-        relocate("android", "${externalRelocatePath}.android")
-        relocate("google", "${externalRelocatePath}.google")
-        relocate("io", "${externalRelocatePath}.io")
-        relocate("org", "${externalRelocatePath}.org")
-        relocate("build", "${externalRelocatePath}.build")
-        relocate("src", "${externalRelocatePath}.src")
     }
 
     tasks.test {
@@ -64,13 +59,4 @@ subprojects {
         expand("version" to project.version,
             "name" to project.name)
     }
-}
-
-tasks.processResources {
-    expand("version" to project.version,
-        "name" to project.name)
-}
-
-tasks.test {
-    useJUnitPlatform()
 }

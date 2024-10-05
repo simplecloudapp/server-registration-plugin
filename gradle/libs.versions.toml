@@ -1,9 +1,11 @@
 [versions]
 kotlin = "2.0.20"
-shadow = "8.1.1"
+shadow = "8.3.3"
 log4j = "2.20.0"
 grpcVersion = "1.61.0"
 grpcKotlinVersion = "1.4.1"
+simpleCloudEventVelocity = "0.0.1-EXPERIMENTAL"
+simpleCloudController = "0.0.28-EXPERIMENTAL"
 
 [libraries]
 kotlinJvm = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
@@ -14,6 +16,8 @@ log4jSlf4j = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref
 grpcStub = { module = "io.grpc:grpc-stub", version.ref = "grpcVersion" }
 grpcKotlinStub = { module = "io.grpc:grpc-kotlin-stub", version.ref = "grpcKotlinVersion" }
 grpcNettyShaded = { module = "io.grpc:grpc-netty-shaded", version.ref = "grpcVersion" }
+simpleCloudEventVelocity = { module = "app.simplecloud.event:event-wrapper-velocity", version.ref = "simpleCloudEventVelocity"}
+simpleCloudController = { module = "app.simplecloud.controller:controller-api", version.ref = "simpleCloudController" }
 
 [bundles]
 log4j = [
@@ -24,4 +28,4 @@ log4j = [
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

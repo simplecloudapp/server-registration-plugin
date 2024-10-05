@@ -1,6 +1,11 @@
 package app.simplecloud.plugin.registration.velocity
 
+import BuildConstants
+import app.simplecloud.event.velocity.mapping.CloudServerStopEvent
+import app.simplecloud.event.velocity.mapping.CloudServerUpdateEvent
 import app.simplecloud.plugin.registration.shared.ServerRegistrationPlugin
+import build.buf.gen.simplecloud.controller.v1.ServerState
+import build.buf.gen.simplecloud.controller.v1.ServerType
 import com.google.inject.Inject
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent
@@ -14,9 +19,9 @@ import java.util.logging.Logger
 
 
 @Plugin(
-    id = "registration-velocity",
-    name = "registration-velocity",
-    version = "1.0-SNAPSHOT",
+    id = BuildConstants.MODULE_NAME,
+    name = BuildConstants.MODULE_NAME,
+    version = BuildConstants.VERSION,
     authors = ["daviidooo"],
     description = "Server Registration plugin for SimpleCloud v3",
     url = "https://github.com/theSimpleCloud/server-registration-plugin"
@@ -40,6 +45,18 @@ import java.util.logging.Logger
             val serverInfo = ServerInfo(it.name, InetSocketAddress.createUnresolved(it.address, it.port.toInt()))
             server.registerServer(serverInfo)
         }
+    }
+
+    @Subscribe
+    fun onServerStart(event: CloudServerUpdateEvent) {
+        if(event.getTo().type != ServerType.SERVER) return
+        if(event.getTo().state == ServerState.AVAILABLE && event.getFrom().state != ServerState.AVAILABLE)
+            serverRegistration.register(event.getTo())
+    }
+
+    @Subscribe
+    fun onServerStop(event: CloudServerStopEvent) {
+        serverRegistration.unregister(event.getServer())
     }
 
     private fun cleanupServers() {
