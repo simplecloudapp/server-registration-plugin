@@ -47,6 +47,7 @@ subprojects {
         archiveFileName.set("${project.name}.jar")
 
         val externalRelocatePath = "app.simplecloud.external"
+        relocate("kotlinx", "${externalRelocatePath}.kotlinx")
         relocate("android", "${externalRelocatePath}.android")
         relocate("google", "${externalRelocatePath}.google")
         relocate("io", "${externalRelocatePath}.io")
