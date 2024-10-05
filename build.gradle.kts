@@ -36,7 +36,7 @@ subprojects {
     }
 
     kotlin {
-        jvmToolchain(21)
+        jvmToolchain(17)
         compilerOptions {
             apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
         }
@@ -45,6 +45,14 @@ subprojects {
     tasks.named("shadowJar", ShadowJar::class) {
         mergeServiceFiles()
         archiveFileName.set("${project.name}.jar")
+
+        val externalRelocatePath = "app.simplecloud.external"
+        relocate("android", "${externalRelocatePath}.android")
+        relocate("google", "${externalRelocatePath}.google")
+        relocate("io", "${externalRelocatePath}.io")
+        relocate("org", "${externalRelocatePath}.org")
+        relocate("build", "${externalRelocatePath}.build")
+        relocate("src", "${externalRelocatePath}.src")
     }
 
     tasks.test {
