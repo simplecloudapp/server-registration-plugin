@@ -2,7 +2,7 @@
 dependencies {
     api(project(":registration-shared"))
     compileOnly("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
-    compileOnly(libs.simpleCloudEventVelocity)
+    compileOnly(libs.simplecloud.event.velocity)
 }
 
 tasks.named("compileKotlin") {

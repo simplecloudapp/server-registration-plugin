@@ -1,11 +1,18 @@
 package app.simplecloud.plugin.registration.bungee
 
+import app.simplecloud.controller.api.ControllerApi
+import app.simplecloud.event.bungeecord.mapping.CloudServerStopEvent
+import app.simplecloud.event.bungeecord.mapping.CloudServerUpdateEvent
 import app.simplecloud.plugin.registration.shared.ServerRegistrationPlugin
+import build.buf.gen.simplecloud.controller.v1.ServerState
+import build.buf.gen.simplecloud.controller.v1.ServerType
 import net.md_5.bungee.api.ProxyServer
+import net.md_5.bungee.api.plugin.Listener
 import net.md_5.bungee.api.plugin.Plugin
+import net.md_5.bungee.event.EventHandler
 import java.net.InetSocketAddress
 
-class BungeeServerRegistrationPlugin : Plugin() {
+class BungeeServerRegistrationPlugin : Plugin(), Listener {
 
     val serverRegistration by lazy {
         ServerRegistrationPlugin(
@@ -15,9 +22,11 @@ class BungeeServerRegistrationPlugin : Plugin() {
         )
     }
 
+    private val api = ControllerApi.create()
+
     override fun onEnable() {
         cleanupServers()
-        serverRegistration.start()
+        serverRegistration.start(api)
         serverRegistration.getConfig().additionalServers.forEach {
             val serverInfo = ProxyServer.getInstance().constructServerInfo(
                 it.name,
@@ -27,6 +36,7 @@ class BungeeServerRegistrationPlugin : Plugin() {
             )
             ProxyServer.getInstance().servers[it.name] = serverInfo
         }
+        ProxyServer.getInstance().pluginManager.registerListener(this, this)
     }
 
     private fun cleanupServers() {
@@ -35,6 +45,20 @@ class BungeeServerRegistrationPlugin : Plugin() {
         for (info in ProxyServer.getInstance().configurationAdapter.listeners) {
             info.serverPriority.clear()
         }
+    }
+
+    @EventHandler
+    fun onServerStart(event: CloudServerUpdateEvent) {
+        if(event.getTo().type != ServerType.SERVER) return
+        if(event.getTo().state == ServerState.AVAILABLE && event.getFrom().state != ServerState.AVAILABLE) {
+            serverRegistration.register(event.getTo())
+            api.getServers().updateServerProperty(event.getTo().uniqueId, "server-registered", "true")
+        }
+    }
+
+    @EventHandler
+    fun onServerStop(event: CloudServerStopEvent) {
+        serverRegistration.unregister(event.getServer())
     }
 
 }

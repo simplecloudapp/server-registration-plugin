@@ -30,8 +30,8 @@ subprojects {
     apply(plugin = "com.gradleup.shadow")
 
     dependencies {
-        testImplementation(rootProject.libs.kotlinTest)
-        implementation(rootProject.libs.kotlinJvm)
+        testImplementation(rootProject.libs.kotlin.test)
+        implementation(rootProject.libs.kotlin.jvm)
     }
 
 
