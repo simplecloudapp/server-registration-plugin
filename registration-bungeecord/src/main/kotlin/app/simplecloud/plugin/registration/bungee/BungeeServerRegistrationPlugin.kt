@@ -6,6 +6,9 @@ import app.simplecloud.event.bungeecord.mapping.CloudServerUpdateEvent
 import app.simplecloud.plugin.registration.shared.ServerRegistrationPlugin
 import build.buf.gen.simplecloud.controller.v1.ServerState
 import build.buf.gen.simplecloud.controller.v1.ServerType
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import net.md_5.bungee.api.ProxyServer
 import net.md_5.bungee.api.plugin.Listener
 import net.md_5.bungee.api.plugin.Plugin
@@ -22,11 +25,13 @@ class BungeeServerRegistrationPlugin : Plugin(), Listener {
         )
     }
 
-    private val api = ControllerApi.create()
+    private val api = ControllerApi.createCoroutineApi()
 
     override fun onEnable() {
         cleanupServers()
-        serverRegistration.start(api)
+        CoroutineScope(Dispatchers.Default).launch {
+            serverRegistration.start(api)
+        }
         serverRegistration.getConfig().additionalServers.forEach {
             val serverInfo = ProxyServer.getInstance().constructServerInfo(
                 it.name,
@@ -49,10 +54,12 @@ class BungeeServerRegistrationPlugin : Plugin(), Listener {
 
     @EventHandler
     fun onServerStart(event: CloudServerUpdateEvent) {
-        if(event.getTo().type != ServerType.SERVER) return
-        if(event.getTo().state == ServerState.AVAILABLE && event.getFrom().state != ServerState.AVAILABLE) {
+        if (event.getTo().type != ServerType.SERVER) return
+        if (event.getTo().state == ServerState.AVAILABLE && event.getFrom().state != ServerState.AVAILABLE) {
             serverRegistration.register(event.getTo())
-            api.getServers().updateServerProperty(event.getTo().uniqueId, "server-registered", "true")
+            CoroutineScope(Dispatchers.Default).launch {
+                api.getServers().updateServerProperty(event.getTo().uniqueId, "server-registered", "true")
+            }
         }
     }
 

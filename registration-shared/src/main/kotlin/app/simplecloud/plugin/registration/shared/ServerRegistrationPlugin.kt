@@ -2,6 +2,7 @@ package app.simplecloud.plugin.registration.shared
 
 import app.simplecloud.controller.api.ControllerApi
 import app.simplecloud.controller.shared.server.Server
+import build.buf.gen.simplecloud.controller.v1.ServerState
 import build.buf.gen.simplecloud.controller.v1.ServerType
 import org.spongepowered.configurate.kotlin.extensions.get
 import org.spongepowered.configurate.kotlin.objectMapperFactory
@@ -11,6 +12,8 @@ import org.spongepowered.configurate.yaml.YamlConfigurationLoader
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.Duration
+import java.time.LocalDateTime
 import java.util.logging.Logger
 
 class ServerRegistrationPlugin(
@@ -25,14 +28,10 @@ class ServerRegistrationPlugin(
         additionalServers = listOf()
     )
 
-    fun start(api: ControllerApi) {
+    suspend fun start(api: ControllerApi.Coroutine) {
         logger.info("Initializing v3 server registration plugin...")
         loadConfig(File(dataDirectory.toFile(), "config.yml"))
-        api.getServers().getServersByType(ServerType.SERVER).thenApply { servers ->
-            servers.forEach { server ->
-                register(server)
-            }
-        }
+        api.getServers().getServersByType(ServerType.SERVER).filter { it.state == ServerState.AVAILABLE && Duration.between(it.updatedAt, LocalDateTime.now()).seconds < 10 }.forEach(::register)
     }
 
     private fun loadConfig(file: File) {

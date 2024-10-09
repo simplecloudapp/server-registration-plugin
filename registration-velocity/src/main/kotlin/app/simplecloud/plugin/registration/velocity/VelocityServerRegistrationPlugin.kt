@@ -14,6 +14,9 @@ import com.velocitypowered.api.plugin.Plugin
 import com.velocitypowered.api.plugin.annotation.DataDirectory
 import com.velocitypowered.api.proxy.ProxyServer
 import com.velocitypowered.api.proxy.server.ServerInfo
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.net.InetSocketAddress
 import java.nio.file.Path
 import java.util.logging.Logger
@@ -26,7 +29,8 @@ import java.util.logging.Logger
     authors = ["daviidooo"],
     description = "Server Registration plugin for SimpleCloud v3",
     url = "https://github.com/theSimpleCloud/server-registration-plugin"
-) class VelocityServerRegistrationPlugin @Inject constructor(
+)
+class VelocityServerRegistrationPlugin @Inject constructor(
     @DataDirectory val dataDirectory: Path,
     private val server: ProxyServer,
     private val logger: Logger
@@ -38,12 +42,14 @@ import java.util.logging.Logger
         VelocityServerRegisterer(this, server)
     )
 
-    private val api = ControllerApi.create()
+    private val api = ControllerApi.createCoroutineApi()
 
     @Subscribe
     fun handleInitialize(ignored: ProxyInitializeEvent) {
         cleanupServers()
-        serverRegistration.start(api)
+        CoroutineScope(Dispatchers.Default).launch {
+            serverRegistration.start(api)
+        }
         serverRegistration.getConfig().additionalServers.forEach {
             val serverInfo = ServerInfo(it.name, InetSocketAddress.createUnresolved(it.address, it.port.toInt()))
             server.registerServer(serverInfo)
@@ -52,10 +58,12 @@ import java.util.logging.Logger
 
     @Subscribe
     fun onServerStart(event: CloudServerUpdateEvent) {
-        if(event.getTo().type != ServerType.SERVER) return
-        if(event.getTo().state == ServerState.AVAILABLE && event.getFrom().state != ServerState.AVAILABLE) {
+        if (event.getTo().type != ServerType.SERVER) return
+        if (event.getTo().state == ServerState.AVAILABLE && event.getFrom().state != ServerState.AVAILABLE) {
             serverRegistration.register(event.getTo())
-            api.getServers().updateServerProperty(event.getTo().uniqueId, "server-registered", "true")
+            CoroutineScope(Dispatchers.Default).launch {
+                api.getServers().updateServerProperty(event.getTo().uniqueId, "server-registered", "true")
+            }
         }
     }
 
