@@ -1,27 +1,31 @@
 [versions]
-kotlin = "1.8.0"
-shadow = "8.1.1"
-log4j = "2.20.0"
-grpcVersion = "1.61.0"
-grpcKotlinVersion = "1.4.1"
+kotlin = "2.0.20"
+kotlin-coroutines = "1.9.0"
+shadow = "8.3.3"
+simplecloud-event = "0.0.1-EXPERIMENTAL"
+simplecloud-controller = "0.0.30-EXPERIMENTAL"
+bungeecord = "1.20-R0.2"
+configurate = "4.1.2"
 
 [libraries]
-kotlinJvm = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
-kotlinTest = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
-log4jCore = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
-log4jApi = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
-log4jSlf4j = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
-grpcStub = { module = "io.grpc:grpc-stub", version.ref = "grpcVersion" }
-grpcKotlinStub = { module = "io.grpc:grpc-kotlin-stub", version.ref = "grpcKotlinVersion" }
-grpcNettyShaded = { module = "io.grpc:grpc-netty-shaded", version.ref = "grpcVersion" }
+kotlin-jvm = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
+kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+
+
+simplecloud-event-velocity = { module = "app.simplecloud.event:event-wrapper-velocity", version.ref = "simplecloud-event"}
+simplecloud-event-bungeecord = { module = "app.simplecloud.event:event-wrapper-bungeecord", version.ref = "simplecloud-event" }
+simplecloud-controller = { module = "app.simplecloud.controller:controller-api", version.ref = "simplecloud-controller" }
+configurate = { module = "org.spongepowered:configurate-yaml", version.ref = "configurate"}
+configurate-kotlin = { module = "org.spongepowered:configurate-extra-kotlin", version.ref = "configurate"}
+bungeecord = { module = "net.md-5:bungeecord-api", version.ref = "bungeecord"}
 
 [bundles]
-log4j = [
-    "log4jCore",
-    "log4jApi",
-    "log4jSlf4j"
+configurate = [
+    "configurate",
+    "configurate-kotlin"
 ]
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

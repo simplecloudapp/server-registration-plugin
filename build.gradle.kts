@@ -1,5 +1,4 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     alias(libs.plugins.kotlin)
@@ -12,39 +11,52 @@ allprojects {
 
     repositories {
         mavenCentral()
+        mavenLocal()
+        maven {
+            url = uri("https://oss.sonatype.org/content/repositories/snapshots")
+        }
+        maven {
+            url = uri("https://libraries.minecraft.net")
+        }
+        maven {
+            url = uri("https://repo.papermc.io/repository/maven-public/")
+        }
+        maven("https://buf.build/gen/maven")
     }
 }
 
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
-    apply(plugin = "com.github.johnrengelman.shadow")
+    apply(plugin = "com.gradleup.shadow")
 
     dependencies {
-        testImplementation(rootProject.libs.kotlinTest)
-        implementation(rootProject.libs.kotlinJvm)
+        testImplementation(rootProject.libs.kotlin.test)
+        implementation(rootProject.libs.kotlin.jvm)
     }
+
 
     kotlin {
-        jvmToolchain(17)
-    }
-
-    tasks.withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "17"
+        jvmToolchain(21)
+        compilerOptions {
+            apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+        }
     }
 
     tasks.named("shadowJar", ShadowJar::class) {
-        mergeServiceFiles()
+        dependsOn("processResources")
+        dependencies {
+            include(project(":registration-shared"))
+        }
         archiveFileName.set("${project.name}.jar")
     }
 
     tasks.test {
         useJUnitPlatform()
     }
-}
 
-tasks.test {
-    useJUnitPlatform()
-}
-kotlin {
-    jvmToolchain(17)
+    tasks.processResources {
+        expand("version" to project.version,
+            "name" to project.name)
+    }
 }
