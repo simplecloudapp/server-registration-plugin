@@ -11,16 +11,10 @@ allprojects {
 
     repositories {
         mavenCentral()
-        mavenLocal()
-        maven {
-            url = uri("https://oss.sonatype.org/content/repositories/snapshots")
-        }
-        maven {
-            url = uri("https://libraries.minecraft.net")
-        }
-        maven {
-            url = uri("https://repo.papermc.io/repository/maven-public/")
-        }
+        maven("https://repo.simplecloud.app/snapshots")
+        maven("https://oss.sonatype.org/content/repositories/snapshots")
+        maven("https://libraries.minecraft.net")
+        maven("https://repo.papermc.io/repository/maven-public/")
         maven("https://buf.build/gen/maven")
     }
 }
