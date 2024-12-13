@@ -12,5 +12,4 @@ plugins {
 }
 rootProject.name = "ServerRegistrationPlugin"
 
-include("registration-shared", "registration-velocity", "registration-bungeecord")
-
+include("registration-shared", "registration-velocity", "registration-bungeecord", "registration-waterdog")
