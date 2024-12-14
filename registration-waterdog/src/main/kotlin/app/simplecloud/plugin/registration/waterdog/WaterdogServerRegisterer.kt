@@ -6,7 +6,7 @@ import dev.waterdog.waterdogpe.ProxyServer
 import dev.waterdog.waterdogpe.network.serverinfo.BedrockServerInfo
 import java.net.InetSocketAddress
 
-class VelocityServerRegisterer(
+class WaterdogServerRegisterer(
     private val plugin: WaterdogServerRegistrationPlugin,
     private val proxy: ProxyServer
 ): ServerRegisterer {

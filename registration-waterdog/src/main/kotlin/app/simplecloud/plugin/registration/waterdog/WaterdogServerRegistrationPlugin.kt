@@ -17,7 +17,7 @@ class WaterdogServerRegistrationPlugin: Plugin() {
     val serverRegistration = ServerRegistrationPlugin(
         logger,
         dataFolder.toPath(),
-        VelocityServerRegisterer(this, proxy)
+        WaterdogServerRegisterer(this, proxy)
     )
 
     private val api = ControllerApi.createCoroutineApi()
@@ -35,7 +35,6 @@ class WaterdogServerRegistrationPlugin: Plugin() {
             )
         }
     }
-
 
     private fun cleanupServers() {
         proxy.servers.forEach {
