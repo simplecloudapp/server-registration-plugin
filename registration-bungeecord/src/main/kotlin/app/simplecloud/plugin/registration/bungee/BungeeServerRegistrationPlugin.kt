@@ -29,9 +29,10 @@ class BungeeServerRegistrationPlugin : Plugin(), Listener {
 
     override fun onEnable() {
         cleanupServers()
-        CoroutineScope(Dispatchers.Default).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             serverRegistration.start(api)
         }
+
         serverRegistration.getConfig().additionalServers.forEach {
             val serverInfo = ProxyServer.getInstance().constructServerInfo(
                 it.name,
@@ -39,14 +40,17 @@ class BungeeServerRegistrationPlugin : Plugin(), Listener {
                 it.name,
                 false
             )
+
             ProxyServer.getInstance().servers[it.name] = serverInfo
         }
+
         ProxyServer.getInstance().pluginManager.registerListener(this, this)
     }
 
     private fun cleanupServers() {
         ProxyServer.getInstance().configurationAdapter.servers.clear()
         ProxyServer.getInstance().servers.clear()
+
         for (info in ProxyServer.getInstance().configurationAdapter.listeners) {
             info.serverPriority.clear()
         }
@@ -57,7 +61,7 @@ class BungeeServerRegistrationPlugin : Plugin(), Listener {
         if (event.getTo().type != ServerType.SERVER) return
         if (event.getTo().state == ServerState.AVAILABLE && event.getFrom().state != ServerState.AVAILABLE) {
             serverRegistration.register(event.getTo())
-            CoroutineScope(Dispatchers.Default).launch {
+            CoroutineScope(Dispatchers.IO).launch {
                 api.getServers().updateServerProperty(event.getTo().uniqueId, "server-registered", "true")
             }
         }
@@ -67,5 +71,4 @@ class BungeeServerRegistrationPlugin : Plugin(), Listener {
     fun onServerStop(event: CloudServerStopEvent) {
         serverRegistration.unregister(event.getServer())
     }
-
 }

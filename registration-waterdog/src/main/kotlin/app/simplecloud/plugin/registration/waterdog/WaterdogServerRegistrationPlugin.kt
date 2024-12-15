@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import java.net.InetSocketAddress
 import java.util.logging.Logger
 
-class WaterdogServerRegistrationPlugin: Plugin() {
+class WaterdogServerRegistrationPlugin : Plugin() {
 
     private val logger = Logger.getLogger(getLogger().name)
 
@@ -24,23 +24,24 @@ class WaterdogServerRegistrationPlugin: Plugin() {
 
     override fun onEnable() {
         cleanupServers()
-        CoroutineScope(Dispatchers.Default).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             serverRegistration.start(api)
         }
+
         serverRegistration.getConfig().additionalServers.forEach {
-            proxy.registerServerInfo(BedrockServerInfo(it.name,
-                InetSocketAddress.createUnresolved(it.address, it.port.toInt()),
-                InetSocketAddress.createUnresolved(it.address, it.port.toInt())
+            proxy.registerServerInfo(
+                BedrockServerInfo(
+                    it.name,
+                    InetSocketAddress.createUnresolved(it.address, it.port.toInt()),
+                    InetSocketAddress.createUnresolved(it.address, it.port.toInt())
                 )
             )
         }
     }
-
 
     private fun cleanupServers() {
         proxy.servers.forEach {
             proxy.removeServerInfo(it.serverName)
         }
     }
-
 }

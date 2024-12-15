@@ -31,7 +31,12 @@ class ServerRegistrationPlugin(
     suspend fun start(api: ControllerApi.Coroutine) {
         logger.info("Initializing v3 server registration plugin...")
         loadConfig(File(dataDirectory.toFile(), "config.yml"))
-        api.getServers().getServersByType(ServerType.SERVER).filter { it.state == ServerState.AVAILABLE && Duration.between(it.updatedAt, LocalDateTime.now()).seconds < 10 }.forEach(::register)
+        api.getServers().getServersByType(ServerType.SERVER).filter {
+            it.state == ServerState.AVAILABLE && Duration.between(
+                it.updatedAt,
+                LocalDateTime.now()
+            ).seconds < 10
+        }.forEach(::register)
     }
 
     private fun loadConfig(file: File) {
@@ -44,17 +49,20 @@ class ServerRegistrationPlugin(
                 }
             }
             .build()
+
         var replace = false
         if (!file.exists()) {
             replace = true
             Files.createDirectories(file.parentFile.toPath())
             Files.createFile(file.toPath())
         }
+
         val node = loader.load()
         if (replace) {
             config.toNode(node)
             loader.save(node)
         }
+
         config = node.get<ServerRegistrationConfig>() ?: return
     }
 
@@ -69,23 +77,29 @@ class ServerRegistrationPlugin(
             "%NUMERICAL_ID%" to server.numericalId.toString(),
             "%ID%" to server.uniqueId,
         )
+
         placeholders.putAll(server.properties.map {
             "%${it.key.uppercase().replace("-", "_")}%" to it.value
         })
+
         placeholders.forEach {
             toReturn = toReturn.replace(it.key, it.value)
         }
+
         return toReturn
     }
 
     fun register(server: Server) {
-        logger.info("Registering server ${server.uniqueId} (${parseServerId(server)})...")
-        registerer.register(server)
+        if (server.properties["configurator"]?.contains("standalone") == true) {
+            logger.info("Registering server ${server.uniqueId} (${parseServerId(server)})...")
+            registerer.register(server)
+        }
     }
 
     fun unregister(server: Server) {
-        logger.info("Unregistering server ${server.uniqueId} (${parseServerId(server)})...")
-        registerer.unregister(server)
+        if (registerer.getRegistered().any() { it.uniqueId == server.uniqueId }) {
+            logger.info("Unregistering server ${server.uniqueId} (${parseServerId(server)})...")
+            registerer.unregister(server)
+        }
     }
-
 }

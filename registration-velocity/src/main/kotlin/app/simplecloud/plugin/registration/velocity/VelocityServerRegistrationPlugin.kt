@@ -21,7 +21,6 @@ import java.net.InetSocketAddress
 import java.nio.file.Path
 import java.util.logging.Logger
 
-
 @Plugin(
     id = BuildConstants.MODULE_NAME,
     name = BuildConstants.MODULE_NAME,
@@ -47,7 +46,7 @@ class VelocityServerRegistrationPlugin @Inject constructor(
     @Subscribe
     fun handleInitialize(ignored: ProxyInitializeEvent) {
         cleanupServers()
-        CoroutineScope(Dispatchers.Default).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             serverRegistration.start(api)
         }
         serverRegistration.getConfig().additionalServers.forEach {
@@ -61,7 +60,7 @@ class VelocityServerRegistrationPlugin @Inject constructor(
         if (event.getTo().type != ServerType.SERVER) return
         if (event.getTo().state == ServerState.AVAILABLE && event.getFrom().state != ServerState.AVAILABLE) {
             serverRegistration.register(event.getTo())
-            CoroutineScope(Dispatchers.Default).launch {
+            CoroutineScope(Dispatchers.IO).launch {
                 api.getServers().updateServerProperty(event.getTo().uniqueId, "server-registered", "true")
             }
         }
@@ -77,5 +76,4 @@ class VelocityServerRegistrationPlugin @Inject constructor(
             server.unregisterServer(it.serverInfo)
         }
     }
-
 }
