@@ -29,7 +29,7 @@ class BungeeServerRegistrationPlugin : Plugin(), Listener {
 
     override fun onEnable() {
         cleanupServers()
-        CoroutineScope(Dispatchers.Default).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             serverRegistration.start(api)
         }
 
@@ -61,7 +61,7 @@ class BungeeServerRegistrationPlugin : Plugin(), Listener {
         if (event.getTo().type != ServerType.SERVER) return
         if (event.getTo().state == ServerState.AVAILABLE && event.getFrom().state != ServerState.AVAILABLE) {
             serverRegistration.register(event.getTo())
-            CoroutineScope(Dispatchers.Default).launch {
+            CoroutineScope(Dispatchers.IO).launch {
                 api.getServers().updateServerProperty(event.getTo().uniqueId, "server-registered", "true")
             }
         }

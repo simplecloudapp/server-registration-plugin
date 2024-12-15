@@ -4,9 +4,6 @@ import app.simplecloud.controller.api.ControllerApi
 import app.simplecloud.controller.shared.server.Server
 import build.buf.gen.simplecloud.controller.v1.ServerState
 import build.buf.gen.simplecloud.controller.v1.ServerType
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.spongepowered.configurate.kotlin.extensions.get
 import org.spongepowered.configurate.kotlin.objectMapperFactory
 import org.spongepowered.configurate.kotlin.toNode
@@ -93,12 +90,9 @@ class ServerRegistrationPlugin(
     }
 
     fun register(server: Server) {
-        CoroutineScope(Dispatchers.Default).launch {
-            val group = ControllerApi.createCoroutineApi().getGroups().getGroupByName(server.group)
-            if (group.properties["configurator"] != "spigot_standalone") {
-                logger.info("Registering server ${server.uniqueId} (${parseServerId(server)})...")
-                registerer.register(server)
-            }
+        if (server.properties["configurator"] != "spigot_standalone") {
+            logger.info("Registering server ${server.uniqueId} (${parseServerId(server)})...")
+            registerer.register(server)
         }
     }
 

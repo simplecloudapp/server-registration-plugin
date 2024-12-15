@@ -12,6 +12,7 @@ class VelocityServerRegisterer(
 ): ServerRegisterer {
 
     private val servers = mutableListOf<Server>()
+
     override fun getRegistered(): List<Server> {
         return servers
     }
