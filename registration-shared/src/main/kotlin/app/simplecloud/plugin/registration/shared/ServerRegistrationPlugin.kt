@@ -90,7 +90,7 @@ class ServerRegistrationPlugin(
     }
 
     fun register(server: Server) {
-        if (server.properties["configurator"] != "spigot_standalone") {
+        if (server.properties["configurator"]?.contains("standalone") == true) {
             logger.info("Registering server ${server.uniqueId} (${parseServerId(server)})...")
             registerer.register(server)
         }
