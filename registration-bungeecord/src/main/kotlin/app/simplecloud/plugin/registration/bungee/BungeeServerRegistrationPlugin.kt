@@ -32,6 +32,7 @@ class BungeeServerRegistrationPlugin : Plugin(), Listener {
         CoroutineScope(Dispatchers.Default).launch {
             serverRegistration.start(api)
         }
+
         serverRegistration.getConfig().additionalServers.forEach {
             val serverInfo = ProxyServer.getInstance().constructServerInfo(
                 it.name,
@@ -39,14 +40,17 @@ class BungeeServerRegistrationPlugin : Plugin(), Listener {
                 it.name,
                 false
             )
+
             ProxyServer.getInstance().servers[it.name] = serverInfo
         }
+
         ProxyServer.getInstance().pluginManager.registerListener(this, this)
     }
 
     private fun cleanupServers() {
         ProxyServer.getInstance().configurationAdapter.servers.clear()
         ProxyServer.getInstance().servers.clear()
+
         for (info in ProxyServer.getInstance().configurationAdapter.listeners) {
             info.serverPriority.clear()
         }
@@ -67,5 +71,4 @@ class BungeeServerRegistrationPlugin : Plugin(), Listener {
     fun onServerStop(event: CloudServerStopEvent) {
         serverRegistration.unregister(event.getServer())
     }
-
 }

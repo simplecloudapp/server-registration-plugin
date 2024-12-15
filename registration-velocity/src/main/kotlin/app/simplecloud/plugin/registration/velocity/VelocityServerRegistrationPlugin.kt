@@ -21,7 +21,6 @@ import java.net.InetSocketAddress
 import java.nio.file.Path
 import java.util.logging.Logger
 
-
 @Plugin(
     id = BuildConstants.MODULE_NAME,
     name = BuildConstants.MODULE_NAME,
@@ -77,5 +76,4 @@ class VelocityServerRegistrationPlugin @Inject constructor(
             server.unregisterServer(it.serverInfo)
         }
     }
-
 }
