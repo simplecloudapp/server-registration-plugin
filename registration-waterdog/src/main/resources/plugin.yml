@@ -1,0 +1,4 @@
+﻿name: ${name}
+version: ${version}
+author: "InvalidJoker"
+main: app.simplecloud.plugin.registration.waterdog.WaterdogServerRegistrationPlugin
