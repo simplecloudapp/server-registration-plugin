@@ -7,7 +7,7 @@ plugins {
 
 allprojects {
     group = "app.simplecloud.plugin"
-    version = "1.0-SNAPSHOT"
+    version = "0.0.1"
 
     repositories {
         mavenCentral()
@@ -16,6 +16,10 @@ allprojects {
         maven("https://libraries.minecraft.net")
         maven("https://repo.papermc.io/repository/maven-public/")
         maven("https://buf.build/gen/maven")
+        maven("https://repo.waterdog.dev/releases/")
+        maven("https://repo.waterdog.dev/snapshots/")
+        maven("https://repo.opencollab.dev/maven-releases/")
+        maven("https://repo.opencollab.dev/maven-snapshots/")
     }
 }
 
