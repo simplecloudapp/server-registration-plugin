@@ -12,17 +12,16 @@ import java.util.logging.Logger
 
 class WaterdogServerRegistrationPlugin: Plugin() {
 
-    private val logger = Logger.getLogger(getLogger().name)
-
-    val serverRegistration = ServerRegistrationPlugin(
-        logger,
-        dataFolder.toPath(),
-        WaterdogServerRegisterer(this, proxy)
-    )
-
     private val api = ControllerApi.createCoroutineApi()
 
+    lateinit var serverRegistration: ServerRegistrationPlugin
+
     override fun onEnable() {
+        serverRegistration = ServerRegistrationPlugin(
+            Logger.getGlobal(),
+            dataFolder.toPath(),
+            WaterdogServerRegisterer(this, proxy)
+        )
         cleanupServers()
         CoroutineScope(Dispatchers.Default).launch {
             serverRegistration.start(api)
