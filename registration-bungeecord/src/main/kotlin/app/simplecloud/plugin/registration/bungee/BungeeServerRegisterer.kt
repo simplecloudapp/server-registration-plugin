@@ -17,12 +17,14 @@ class BungeeServerRegisterer(private val plugin: BungeeServerRegistrationPlugin)
     override fun register(server: Server) {
         val id = plugin.serverRegistration.parseServerId(server)
         val info = ProxyServer.getInstance().constructServerInfo(id, InetSocketAddress.createUnresolved(server.ip, server.port.toInt()), server.uniqueId, server.properties.getOrDefault("proxy-restricted", "false").toBoolean())
+
         ProxyServer.getInstance().servers[id] = info
         registered.add(server)
     }
 
     override fun unregister(server: Server) {
         val proxy = ProxyServer.getInstance()
+
         proxy.servers.removeServer(server.uniqueId)
         registered.remove(server)
     }
@@ -31,6 +33,7 @@ class BungeeServerRegisterer(private val plugin: BungeeServerRegistrationPlugin)
         val toRemove = this.filter { it.value.motd == uniqueId }
         val value = toRemove.values.firstOrNull() ?: return null
         val key = toRemove.keys.firstOrNull() ?: return null
+
         remove(key, value)
         return value
     }

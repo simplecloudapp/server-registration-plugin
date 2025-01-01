@@ -12,7 +12,6 @@ kotlin-jvm = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref =
 kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 
-
 simplecloud-event-velocity = { module = "app.simplecloud.event:event-wrapper-velocity", version.ref = "simplecloud-event"}
 simplecloud-event-bungeecord = { module = "app.simplecloud.event:event-wrapper-bungeecord", version.ref = "simplecloud-event" }
 simplecloud-controller = { module = "app.simplecloud.controller:controller-api", version.ref = "simplecloud-controller" }
