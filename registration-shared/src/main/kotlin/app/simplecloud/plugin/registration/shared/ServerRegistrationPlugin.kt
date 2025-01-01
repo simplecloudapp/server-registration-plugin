@@ -42,7 +42,7 @@ class ServerRegistrationPlugin(
     private fun loadConfig(file: File) {
         val loader = YamlConfigurationLoader.builder()
             .file(file)
-            .nodeStyle(NodeStyle.FLOW)
+            .nodeStyle(NodeStyle.BLOCK)
             .defaultOptions { options ->
                 options.serializers {
                     it.registerAnnotatedObjects(objectMapperFactory()).build()
