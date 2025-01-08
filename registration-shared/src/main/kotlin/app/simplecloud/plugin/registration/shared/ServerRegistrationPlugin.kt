@@ -31,7 +31,9 @@ class ServerRegistrationPlugin(
     suspend fun start(api: ControllerApi.Coroutine) {
         logger.info("Initializing v3 server registration plugin...")
         loadConfig(File(dataDirectory.toFile(), "config.yml"))
-        api.getServers().getServersByType(ServerType.SERVER).filter {
+        val serversByType = api.getServers().getServersByType(ServerType.SERVER)
+        logger.info("Found ${serversByType.size} servers")
+        serversByType.filter {
             it.state == ServerState.AVAILABLE && Duration.between(
                 it.updatedAt,
                 LocalDateTime.now()

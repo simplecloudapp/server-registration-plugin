@@ -58,6 +58,7 @@ class BungeeServerRegistrationPlugin : Plugin(), Listener {
 
     @EventHandler
     fun onServerStart(event: CloudServerUpdateEvent) {
+        logger.info("onServerStart ${event.getFrom()} -> ${event.getTo()}")
         if (event.getTo().type != ServerType.SERVER) return
         if (event.getTo().state == ServerState.AVAILABLE && event.getFrom().state != ServerState.AVAILABLE) {
             serverRegistration.register(event.getTo())
@@ -69,6 +70,7 @@ class BungeeServerRegistrationPlugin : Plugin(), Listener {
 
     @EventHandler
     fun onServerStop(event: CloudServerStopEvent) {
+        logger.info("onServerStop ${event.getServer()}")
         serverRegistration.unregister(event.getServer())
     }
 }
