@@ -4,7 +4,7 @@ kotlin-coroutines = "1.9.0"
 shadow = "8.3.3"
 simplecloud-event = "0.0.1-dev.950792a"
 simplecloud-controller = "0.0.30-dev.bf5da83"
-bungeecord = "1.20-R0.2"
+bungeecord = "1.20-R0.2-SNAPSHOT"
 configurate = "4.1.2"
 minotaur = "2.8.7"
 

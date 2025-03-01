@@ -6,11 +6,5 @@
     "daviidooo",
     "MrManHD"
   ],
-  "dependencies": [
-    {
-      "id": "event-wrapper-velocity",
-      "optional": false
-    }
-  ],
   "main": "app.simplecloud.plugin.registration.velocity.VelocityServerRegistrationPlugin"
 }

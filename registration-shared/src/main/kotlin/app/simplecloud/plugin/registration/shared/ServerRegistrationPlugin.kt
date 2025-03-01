@@ -2,8 +2,14 @@ package app.simplecloud.plugin.registration.shared
 
 import app.simplecloud.controller.api.ControllerApi
 import app.simplecloud.controller.shared.server.Server
+import app.simplecloud.pubsub.PubSubClient
 import build.buf.gen.simplecloud.controller.v1.ServerState
+import build.buf.gen.simplecloud.controller.v1.ServerStopEvent
 import build.buf.gen.simplecloud.controller.v1.ServerType
+import build.buf.gen.simplecloud.controller.v1.ServerUpdateEvent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.spongepowered.configurate.kotlin.extensions.get
 import org.spongepowered.configurate.kotlin.objectMapperFactory
 import org.spongepowered.configurate.kotlin.toNode
@@ -30,6 +36,9 @@ class ServerRegistrationPlugin(
 
     suspend fun start(api: ControllerApi.Coroutine) {
         logger.info("Initializing v3 server registration plugin...")
+
+        registerPubSubListener(api)
+
         loadConfig(File(dataDirectory.toFile(), "config.yml"))
         val serversByType = api.getServers().getServersByType(ServerType.SERVER)
         logger.info("Found ${serversByType.size} servers")
@@ -39,6 +48,21 @@ class ServerRegistrationPlugin(
                 LocalDateTime.now()
             ).seconds < 10
         }.forEach(::register)
+    }
+
+    private fun registerPubSubListener(api: ControllerApi.Coroutine) {
+        api.getPubSubClient().subscribe("event", ServerUpdateEvent::class.java) { event ->
+            if (event.serverAfter.serverType != ServerType.SERVER) return@subscribe
+            if (event.serverAfter.serverState == ServerState.AVAILABLE && event.serverBefore.serverState != ServerState.AVAILABLE) {
+                register(Server.fromDefinition(event.serverAfter))
+                CoroutineScope(Dispatchers.IO).launch {
+                    api.getServers().updateServerProperty(event.serverAfter.uniqueId, "server-registered", "true")
+                }}
+        }
+
+        api.getPubSubClient().subscribe("event", ServerStopEvent::class.java) { event ->
+            unregister(Server.fromDefinition(event.server))
+        }
     }
 
     private fun loadConfig(file: File) {
@@ -91,17 +115,18 @@ class ServerRegistrationPlugin(
         return toReturn
     }
 
-    fun register(server: Server) {
+    private fun register(server: Server) {
         if (server.properties["configurator"]?.contains("standalone") == false) {
             logger.info("Registering server ${server.uniqueId} (${parseServerId(server)})...")
             registerer.register(server)
         }
     }
 
-    fun unregister(server: Server) {
+    private fun unregister(server: Server) {
         if (registerer.getRegistered().any() { it.uniqueId == server.uniqueId }) {
             logger.info("Unregistering server ${server.uniqueId} (${parseServerId(server)})...")
             registerer.unregister(server)
         }
     }
+
 }

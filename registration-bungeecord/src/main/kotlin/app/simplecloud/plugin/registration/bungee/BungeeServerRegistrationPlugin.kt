@@ -1,21 +1,15 @@
 package app.simplecloud.plugin.registration.bungee
 
 import app.simplecloud.controller.api.ControllerApi
-import app.simplecloud.event.bungeecord.mapping.CloudServerStopEvent
-import app.simplecloud.event.bungeecord.mapping.CloudServerUpdateEvent
 import app.simplecloud.plugin.registration.shared.ServerRegistrationPlugin
-import build.buf.gen.simplecloud.controller.v1.ServerState
-import build.buf.gen.simplecloud.controller.v1.ServerType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.md_5.bungee.api.ProxyServer
-import net.md_5.bungee.api.plugin.Listener
 import net.md_5.bungee.api.plugin.Plugin
-import net.md_5.bungee.event.EventHandler
 import java.net.InetSocketAddress
 
-class BungeeServerRegistrationPlugin : Plugin(), Listener {
+class BungeeServerRegistrationPlugin : Plugin() {
 
     val serverRegistration by lazy {
         ServerRegistrationPlugin(
@@ -43,8 +37,6 @@ class BungeeServerRegistrationPlugin : Plugin(), Listener {
 
             ProxyServer.getInstance().servers[it.name] = serverInfo
         }
-
-        ProxyServer.getInstance().pluginManager.registerListener(this, this)
     }
 
     private fun cleanupServers() {
@@ -56,21 +48,4 @@ class BungeeServerRegistrationPlugin : Plugin(), Listener {
         }
     }
 
-    @EventHandler
-    fun onServerStart(event: CloudServerUpdateEvent) {
-        logger.info("onServerStart ${event.getFrom()} -> ${event.getTo()}")
-        if (event.getTo().type != ServerType.SERVER) return
-        if (event.getTo().state == ServerState.AVAILABLE && event.getFrom().state != ServerState.AVAILABLE) {
-            serverRegistration.register(event.getTo())
-            CoroutineScope(Dispatchers.IO).launch {
-                api.getServers().updateServerProperty(event.getTo().uniqueId, "server-registered", "true")
-            }
-        }
-    }
-
-    @EventHandler
-    fun onServerStop(event: CloudServerStopEvent) {
-        logger.info("onServerStop ${event.getServer()}")
-        serverRegistration.unregister(event.getServer())
-    }
 }

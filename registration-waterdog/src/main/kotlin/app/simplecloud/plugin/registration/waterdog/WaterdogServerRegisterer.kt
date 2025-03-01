@@ -27,4 +27,5 @@ class VelocityServerRegisterer(
         proxy.removeServerInfo(plugin.serverRegistration.parseServerId(server))
         servers.remove(server)
     }
+
 }
