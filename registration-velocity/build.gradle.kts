@@ -2,6 +2,12 @@ plugins {
     alias(libs.plugins.minotaur)
 }
 
+kotlin {
+    sourceSets.main {
+        kotlin.srcDir(layout.buildDirectory.dir("generated/source/buildConfig"))
+    }
+}
+
 dependencies {
     api(project(":registration-shared"))
     compileOnly("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
