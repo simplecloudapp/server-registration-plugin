@@ -1,9 +1,11 @@
-package registration_gate
+package pkg
 
 import (
+	"buf.build/gen/go/simplecloud/proto-specs/grpc/go/simplecloud/controller/v1/controllerv1grpc"
 	controllerv1 "buf.build/gen/go/simplecloud/proto-specs/protocolbuffers/go/simplecloud/controller/v1"
 	"context"
 	"fmt"
+	"google.golang.org/grpc"
 	"net"
 	"os"
 
@@ -39,9 +41,17 @@ var Plugin = proxy.Plugin{
 
 		pubSubSecret := os.Getenv("CONTROLLER_SECRET")
 
+		controllerHost := os.Getenv("CONTROLLER_HOST")
+		controllerPort := os.Getenv("CONTROLLER_PORT")
+
 		if pubSubHost == "" || pubSubPort == "" || pubSubSecret == "" {
-			log.Error(nil, "Missing required environment variables")
-			return nil
+			return fmt.Errorf("missing required environment variables")
+		}
+
+		err := initServers(p, controllerHost, controllerPort, pubSubSecret, log)
+
+		if err != nil {
+			return err
 		}
 
 		client, err := pubsub.NewPubSubClient(fmt.Sprintf("%s:%s", pubSubHost, pubSubPort), pubSubSecret)
@@ -75,8 +85,23 @@ var Plugin = proxy.Plugin{
 					log.Info("Registered server", "server", updateEvent.ServerAfter)
 				}
 
-				// TODO:
-				// api.getServers().updateServerProperty(event.serverAfter.uniqueId, "server-registered", "true")
+				grpcClient, c, err := getServerClient(controllerHost, controllerPort, pubSubSecret)
+				defer c.Close()
+
+				if err != nil {
+					log.Error(err, "Failed to get server client")
+					return
+				}
+
+				_, err = grpcClient.UpdateServerProperty(context.Background(), &controllerv1.UpdateServerPropertyRequest{
+					ServerId:      updateEvent.ServerAfter.UniqueId,
+					PropertyKey:   "server-registered",
+					PropertyValue: "true",
+				})
+
+				if err != nil {
+					log.Error(err, "Failed to update server property")
+				}
 			}
 		})
 
@@ -96,8 +121,63 @@ var Plugin = proxy.Plugin{
 			log.Info("Removed server", "server", stopEvent.Server)
 		})
 
+		log.Info("Subscribed to pubsub events")
+
 		return nil
 	},
+}
+
+func getServerClient(host string, port string, secret string) (controllerv1grpc.ControllerServerServiceClient, *grpc.ClientConn, error) {
+	if host == "" {
+		host = "127.0.0.1"
+	}
+
+	if port == "" {
+		port = "5816"
+	}
+
+	connection := pubsub.CreateConnection(fmt.Sprintf("%s:%s", host, port), secret)
+
+	grpcClient := controllerv1grpc.NewControllerServerServiceClient(connection)
+
+	return grpcClient, connection, nil
+
+}
+
+func initServers(p *proxy.Proxy, host string, port string, secret string, log logr.Logger) error {
+
+	grpcClient, c, err := getServerClient(host, port, secret)
+
+	defer c.Close()
+
+	servers, err := grpcClient.GetServersByType(context.Background(), &controllerv1.ServerTypeRequest{
+		ServerType: controllerv1.ServerType_SERVER,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	for _, server := range servers.Servers {
+		if server.ServerState != controllerv1.ServerState_AVAILABLE {
+			continue
+		}
+		_, err := p.Register(buildServerInfo(server))
+
+		if err != nil {
+			log.Error(err, "Failed to register server")
+		} else {
+			log.Info("Registered server", "server", server)
+
+			_, err = grpcClient.UpdateServerProperty(context.Background(), &controllerv1.UpdateServerPropertyRequest{
+				ServerId:      server.UniqueId,
+				PropertyKey:   "server-registered",
+				PropertyValue: "true",
+			})
+		}
+	}
+
+	return nil
 }
 
 func buildServerInfo(server *controllerv1.ServerDefinition) *ServerInfo {

@@ -43,4 +43,5 @@ bin/
 .DS_Store
 
 ### Extra ###
-registration-gate/test_impl/*
+registration-gate/server-registration-plugin
+registration-gate/test_impl.go
