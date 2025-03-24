@@ -41,3 +41,7 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Extra ###
+registration-gate/server-registration-plugin
+registration-gate/test_impl.go
