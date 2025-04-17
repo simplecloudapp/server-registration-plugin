@@ -1,4 +1,4 @@
-enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+//enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
     repositories {
@@ -10,6 +10,11 @@ pluginManagement {
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.7.0"
 }
-rootProject.name = "ServerRegistrationPlugin"
+rootProject.name = "server-registration-plugin"
 
-include("registration-shared", "registration-velocity", "registration-bungeecord", "registration-waterdog")
+include(
+    "registration-shared",
+    "registration-velocity",
+    "registration-bungeecord",
+    "registration-waterdog"
+)

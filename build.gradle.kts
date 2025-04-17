@@ -29,9 +29,8 @@ subprojects {
 
     dependencies {
         testImplementation(rootProject.libs.kotlin.test)
-        implementation(rootProject.libs.kotlin.jvm)
+        compileOnly(rootProject.libs.kotlin.jvm)
     }
-
 
     kotlin {
         jvmToolchain(21)
@@ -44,9 +43,20 @@ subprojects {
     tasks.named("shadowJar", ShadowJar::class) {
         dependsOn("processResources")
         dependencies {
-            include(project(":registration-shared"))
+            exclude(dependency("app.simplecloud.controller:controller-api"))
+            exclude(dependency("app.simplecloud.controller:controller-shared"))
+            exclude(dependency("app.simplecloud:simplecloud-pubsub"))
         }
+
         archiveFileName.set("${project.name}.jar")
+
+        relocate("com.google.protobuf", "app.simplecloud.relocate.google.protobuf")
+        relocate("com.google.common", "app.simplecloud.relocate.google.common")
+        relocate("io.grpc", "app.simplecloud.relocate.io.grpc")
+
+        relocate("org.incendo", "app.simplecloud.plugin.registration.relocate.incendo")
+        relocate("org.spongepowered", "app.simplecloud.plugin.registration.relocate.spongepowered")
+        relocate("app.simplecloud.plugin.api", "app.simplecloud.plugin.registration.relocate.plugin.api")
     }
 
     tasks.test {
@@ -54,7 +64,9 @@ subprojects {
     }
 
     tasks.processResources {
-        expand("version" to project.version,
-            "name" to project.name)
+        expand(
+            "version" to project.version,
+            "name" to project.name
+        )
     }
 }

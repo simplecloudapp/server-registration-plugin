@@ -11,6 +11,8 @@ kotlin {
 dependencies {
     api(project(":registration-shared"))
     compileOnly("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
+    compileOnly(libs.simplecloud.controller)
+    compileOnly(libs.kotlin.coroutines)
 }
 
 tasks.named("compileKotlin") {
@@ -51,7 +53,8 @@ modrinth {
         "1.21.1",
         "1.21.2",
         "1.21.3",
-        "1.21.4"
+        "1.21.4",
+        "1.21.5",
     )
     loaders.add("velocity")
     changelog.set("https://docs.simplecloud.app/changelog")
