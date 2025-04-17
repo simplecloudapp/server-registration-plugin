@@ -6,5 +6,10 @@
     "daviidooo",
     "MrManHD"
   ],
-  "main": "app.simplecloud.plugin.registration.velocity.VelocityServerRegistrationPlugin"
+  "main": "app.simplecloud.plugin.registration.velocity.VelocityServerRegistrationPlugin",
+  "dependencies": [
+    {
+      "id": "simplecloud-api"
+    }
+  ]
 }
