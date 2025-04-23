@@ -42,12 +42,7 @@ class ServerRegistrationPlugin(
         loadConfig(File(dataDirectory.toFile(), "config.yml"))
         val serversByType = api.getServers().getServersByType(ServerType.SERVER)
         logger.info("Found ${serversByType.size} servers")
-        serversByType.filter {
-            it.state == ServerState.AVAILABLE && Duration.between(
-                it.updatedAt,
-                LocalDateTime.now()
-            ).seconds < 10
-        }.forEach(::register)
+        serversByType.filter { it.state == ServerState.AVAILABLE }.forEach(::register)
     }
 
     private fun registerPubSubListener(api: ControllerApi.Coroutine) {
