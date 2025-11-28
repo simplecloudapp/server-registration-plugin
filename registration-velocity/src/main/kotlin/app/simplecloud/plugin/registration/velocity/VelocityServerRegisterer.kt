@@ -1,6 +1,6 @@
 package app.simplecloud.plugin.registration.velocity
 
-import app.simplecloud.controller.shared.server.Server
+import app.simplecloud.plugin.registration.shared.RegisteredServer
 import app.simplecloud.plugin.registration.shared.ServerRegisterer
 import com.velocitypowered.api.proxy.ProxyServer
 import com.velocitypowered.api.proxy.server.ServerInfo
@@ -12,21 +12,22 @@ class VelocityServerRegisterer(
     private val proxy: ProxyServer
 ): ServerRegisterer {
 
-    private val servers = mutableListOf<Server>()
+    private val servers = mutableMapOf<String, RegisteredServer>()
 
-    override fun getRegistered(): List<Server> {
+    override fun getRegistered(): Map<String, RegisteredServer> {
         return servers
     }
 
-    override fun register(server: Server) {
-        val info = ServerInfo(plugin.serverRegistration.parseServerId(server), InetSocketAddress.createUnresolved(server.ip, server.port.toInt()))
+    override fun register(server: RegisteredServer) {
+        val info = ServerInfo(plugin.serverRegistration.parseServerId(server), InetSocketAddress.createUnresolved(server.ip, server.port))
         proxy.registerServer(info)
-        servers.add(server)
+        servers[server.serverId] = server
     }
 
-    override fun unregister(server: Server) {
+    override fun unregister(server: RegisteredServer) {
         val registeredSerer = proxy.getServer(plugin.serverRegistration.parseServerId(server)).getOrNull() ?: return
         proxy.unregisterServer(registeredSerer.serverInfo)
-        servers.remove(server)
+        servers.remove(server.serverId)
     }
+
 }

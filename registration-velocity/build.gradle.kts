@@ -11,8 +11,8 @@ kotlin {
 dependencies {
     api(project(":registration-shared"))
     compileOnly("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
-    compileOnly(libs.simplecloud.controller)
-    compileOnly(libs.kotlin.coroutines)
+//    compileOnly(libs.simplecloud.controller)
+    implementation(libs.kotlin.coroutines)
 }
 
 tasks.named("compileKotlin") {

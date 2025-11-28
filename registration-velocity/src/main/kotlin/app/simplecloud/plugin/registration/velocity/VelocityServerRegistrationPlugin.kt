@@ -1,7 +1,7 @@
 package app.simplecloud.plugin.registration.velocity
 
 import BuildConstants
-import app.simplecloud.controller.api.ControllerApi
+import app.simplecloud.api.CloudApi
 import app.simplecloud.plugin.registration.shared.ServerRegistrationPlugin
 import com.google.inject.Inject
 import com.velocitypowered.api.event.Subscribe
@@ -21,7 +21,7 @@ import java.util.logging.Logger
     id = BuildConstants.MODULE_NAME,
     name = BuildConstants.MODULE_NAME,
     version = BuildConstants.VERSION,
-    authors = ["daviidooo"],
+    authors = ["daviidooo", "Fllip"],
     description = "Server Registration plugin for SimpleCloud v3",
     url = "https://github.com/theSimpleCloud/server-registration-plugin"
 )
@@ -37,7 +37,7 @@ class VelocityServerRegistrationPlugin @Inject constructor(
         VelocityServerRegisterer(this, server)
     )
 
-    private val api = ControllerApi.createCoroutineApi()
+    private val api = CloudApi.create()
 
     @Subscribe
     fun handleInitialize(ignored: ProxyInitializeEvent) {

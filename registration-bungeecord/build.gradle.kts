@@ -5,7 +5,7 @@ plugins {
 dependencies {
     api(project(":registration-shared"))
     compileOnly(libs.bungeecord)
-    compileOnly(libs.simplecloud.controller)
+//    compileOnly(libs.simplecloud.controller)
     compileOnly(libs.kotlin.coroutines)
 }
 

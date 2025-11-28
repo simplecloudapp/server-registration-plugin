@@ -15,6 +15,7 @@ allprojects {
 
     repositories {
         mavenCentral()
+        mavenLocal()
         maven("https://repo.simplecloud.app/snapshots")
         maven("https://oss.sonatype.org/content/repositories/snapshots")
         maven("https://libraries.minecraft.net")
@@ -29,7 +30,7 @@ subprojects {
 
     dependencies {
         testImplementation(rootProject.libs.kotlin.test)
-        compileOnly(rootProject.libs.kotlin.jvm)
+        implementation(rootProject.libs.kotlin.jvm)
     }
 
     kotlin {
@@ -42,21 +43,21 @@ subprojects {
 
     tasks.named("shadowJar", ShadowJar::class) {
         dependsOn("processResources")
-        dependencies {
-            exclude(dependency("app.simplecloud.controller:controller-api"))
-            exclude(dependency("app.simplecloud.controller:controller-shared"))
-            exclude(dependency("app.simplecloud:simplecloud-pubsub"))
-        }
+//        dependencies {
+//            exclude(dependency("app.simplecloud.controller:controller-api"))
+//            exclude(dependency("app.simplecloud.controller:controller-shared"))
+//            exclude(dependency("app.simplecloud:simplecloud-pubsub"))
+//        }
 
         archiveFileName.set("${project.name}.jar")
 
-        relocate("com.google.protobuf", "app.simplecloud.relocate.google.protobuf")
-        relocate("com.google.common", "app.simplecloud.relocate.google.common")
-        relocate("io.grpc", "app.simplecloud.relocate.io.grpc")
-
-        relocate("org.incendo", "app.simplecloud.plugin.registration.relocate.incendo")
-        relocate("org.spongepowered", "app.simplecloud.plugin.registration.relocate.spongepowered")
-        relocate("app.simplecloud.plugin.api", "app.simplecloud.plugin.registration.relocate.plugin.api")
+//        relocate("com.google.protobuf", "app.simplecloud.relocate.google.protobuf")
+//        relocate("com.google.common", "app.simplecloud.relocate.google.common")
+//        relocate("io.grpc", "app.simplecloud.relocate.io.grpc")
+//
+//        relocate("org.incendo", "app.simplecloud.plugin.registration.relocate.incendo")
+//        relocate("org.spongepowered", "app.simplecloud.plugin.registration.relocate.spongepowered")
+//        relocate("app.simplecloud.plugin.api", "app.simplecloud.plugin.registration.relocate.plugin.api")
     }
 
     tasks.test {

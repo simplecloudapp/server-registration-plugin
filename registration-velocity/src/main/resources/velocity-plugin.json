@@ -7,9 +7,5 @@
     "MrManHD"
   ],
   "main": "app.simplecloud.plugin.registration.velocity.VelocityServerRegistrationPlugin",
-  "dependencies": [
-    {
-      "id": "simplecloud-api"
-    }
-  ]
+  "dependencies": []
 }

@@ -1,15 +1,10 @@
 package app.simplecloud.plugin.registration.shared
 
-import app.simplecloud.controller.api.ControllerApi
-import app.simplecloud.controller.shared.server.Server
-import app.simplecloud.pubsub.PubSubClient
-import build.buf.gen.simplecloud.controller.v1.ServerState
-import build.buf.gen.simplecloud.controller.v1.ServerStopEvent
-import build.buf.gen.simplecloud.controller.v1.ServerType
-import build.buf.gen.simplecloud.controller.v1.ServerUpdateEvent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import app.simplecloud.api.CloudApi
+import app.simplecloud.api.group.GroupServerType
+import app.simplecloud.api.server.Server
+import app.simplecloud.api.server.ServerQuery
+import app.simplecloud.api.server.ServerState
 import org.spongepowered.configurate.kotlin.extensions.get
 import org.spongepowered.configurate.kotlin.objectMapperFactory
 import org.spongepowered.configurate.kotlin.toNode
@@ -18,14 +13,12 @@ import org.spongepowered.configurate.yaml.YamlConfigurationLoader
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-import java.time.Duration
-import java.time.LocalDateTime
 import java.util.logging.Logger
 
 class ServerRegistrationPlugin(
     private val logger: Logger,
     private val dataDirectory: Path,
-    private val registerer: ServerRegisterer
+    private val registerer: ServerRegisterer,
 ) {
 
     private var config: ServerRegistrationConfig = ServerRegistrationConfig(
@@ -34,30 +27,56 @@ class ServerRegistrationPlugin(
         additionalServers = listOf()
     )
 
-    suspend fun start(api: ControllerApi.Coroutine) {
+    suspend fun start(api: CloudApi) {
         logger.info("Initializing v3 server registration plugin...")
 
         registerPubSubListener(api)
 
         loadConfig(File(dataDirectory.toFile(), "config.yml"))
-        val serversByType = api.getServers().getServersByType(ServerType.SERVER)
-        logger.info("Found ${serversByType.size} servers")
-        serversByType.filter { it.state == ServerState.AVAILABLE }.forEach(::register)
+//        val serversByType = api.server().getServersByType(ServerType.SERVER)
+//        logger.info("Found ${serversByType.size} servers")
+//        serversByType.filter { it.state == ServerState.AVAILABLE }.forEach(::register)
+
+        api.server().getAllServers(
+            ServerQuery.create()
+                .filterByState(ServerState.AVAILABLE)
+                .filterByServerGroupType(GroupServerType.SERVER)
+        ).thenAccept { servers ->
+            logger.info("Found ${servers.size} servers")
+            servers.forEach {
+                register(convertToRegisteredServer(it))
+            }
+        }
     }
 
-    private fun registerPubSubListener(api: ControllerApi.Coroutine) {
-        api.getPubSubClient().subscribe("event", ServerUpdateEvent::class.java) { event ->
-            if (event.serverAfter.serverType != ServerType.SERVER) return@subscribe
-            if (event.serverAfter.serverState == ServerState.AVAILABLE && event.serverBefore.serverState != ServerState.AVAILABLE) {
-                register(Server.fromDefinition(event.serverAfter))
-                CoroutineScope(Dispatchers.IO).launch {
-                    api.getServers().updateServerProperty(event.serverAfter.uniqueId, "server-registered", "true")
-                }}
+    private fun registerPubSubListener(api: CloudApi) {
+//        api.getPubSubClient().subscribe("event", ServerUpdateEvent::class.java) { event ->
+//            if (event.serverAfter.serverType != ServerType.SERVER) return@subscribe
+//            if (event.serverAfter.serverState == ServerState.AVAILABLE && event.serverBefore.serverState != ServerState.AVAILABLE) {
+//                register(Server.fromDefinition(event.serverAfter))
+//                CoroutineScope(Dispatchers.IO).launch {
+//                    api.getServers().updateServerProperty(event.serverAfter.uniqueId, "server-registered", "true")
+//                }}
+//        }
+//
+//        api.getPubSubClient().subscribe("event", ServerStopEvent::class.java) { event ->
+//            unregister(Server.fromDefinition(event.server))
+//        }
+
+        api.event().server().onStateChanged { event ->
+            val server = event.server ?: return@onStateChanged
+            if (server.serverGroup?.type != GroupServerType.SERVER) return@onStateChanged
+            if (event.newState == ServerState.AVAILABLE && event.oldState != ServerState.AVAILABLE) {
+                register(convertToRegisteredServer(server))
+            }
         }
 
-        api.getPubSubClient().subscribe("event", ServerStopEvent::class.java) { event ->
-            unregister(Server.fromDefinition(event.server))
+        api.event().server().onStopped { event ->
+            val server = event.server ?: return@onStopped
+            unregister(convertToRegisteredServer(server))
         }
+
+        // TODO: Persistent Servers
     }
 
     private fun loadConfig(file: File) {
@@ -91,16 +110,17 @@ class ServerRegistrationPlugin(
         return config
     }
 
-    fun parseServerId(server: Server): String {
+    fun parseServerId(server: RegisteredServer): String {
         var toReturn = config.serverNamePattern
+
         val placeholders = mutableMapOf(
-            "%GROUP%" to server.group,
+            "%GROUP%" to server.serverGroupName,
             "%NUMERICAL_ID%" to server.numericalId.toString(),
-            "%ID%" to server.uniqueId,
+            "%ID%" to server.serverId,
         )
 
         placeholders.putAll(server.properties.map {
-            "%${it.key.uppercase().replace("-", "_")}%" to it.value
+            "%${it.key.uppercase().replace("-", "_")}%" to it.value.toString()
         })
 
         placeholders.forEach {
@@ -110,18 +130,33 @@ class ServerRegistrationPlugin(
         return toReturn
     }
 
-    private fun register(server: Server) {
-        if (server.properties["configurator"]?.contains("standalone") == false) {
-            logger.info("Registering server ${server.uniqueId} (${parseServerId(server)})...")
-            registerer.register(server)
+    private fun register(server: RegisteredServer) {
+        if (server.blueprintConfigurator == "standalone") {
+            return
         }
+
+        logger.info("Registering server ${server.serverId} (${parseServerId(server)})...")
+        registerer.register(server)
     }
 
-    private fun unregister(server: Server) {
-        if (registerer.getRegistered().any() { it.uniqueId == server.uniqueId }) {
-            logger.info("Unregistering server ${server.uniqueId} (${parseServerId(server)})...")
+    private fun unregister(server: RegisteredServer) {
+        if (registerer.getRegistered().contains(server.serverId)) {
+            logger.info("Unregistering server ${server.serverId} (${parseServerId(server)})...")
             registerer.unregister(server)
         }
     }
 
+    private fun convertToRegisteredServer(server: Server): RegisteredServer {
+        return RegisteredServer(
+            serverId = server.serverId,
+            numericalId = server.numericalId,
+            ip = server.ip!!,
+            port = server.port!!,
+            serverGroupName = server.serverGroup!!.name!!,
+            properties = server.properties ?: emptyMap(),
+            blueprintConfigurator = server.blueprint?.configurator
+        )
+    }
+
 }
+

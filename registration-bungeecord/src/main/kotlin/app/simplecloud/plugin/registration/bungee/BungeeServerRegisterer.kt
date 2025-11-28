@@ -1,32 +1,36 @@
 package app.simplecloud.plugin.registration.bungee
 
-import app.simplecloud.controller.shared.server.Server
+import app.simplecloud.plugin.registration.shared.RegisteredServer
 import app.simplecloud.plugin.registration.shared.ServerRegisterer
 import net.md_5.bungee.api.ProxyServer
 import net.md_5.bungee.api.config.ServerInfo
 import java.net.InetSocketAddress
 
-class BungeeServerRegisterer(private val plugin: BungeeServerRegistrationPlugin): ServerRegisterer {
+class BungeeServerRegisterer(private val plugin: BungeeServerRegistrationPlugin) : ServerRegisterer {
 
-    private val registered = mutableListOf<Server>()
+    private val servers = mutableMapOf<String, RegisteredServer>()
 
-    override fun getRegistered(): List<Server> {
-       return registered
+    override fun getRegistered(): Map<String, RegisteredServer> {
+        return servers
     }
 
-    override fun register(server: Server) {
+    override fun register(server: RegisteredServer) {
         val id = plugin.serverRegistration.parseServerId(server)
-        val info = ProxyServer.getInstance().constructServerInfo(id, InetSocketAddress.createUnresolved(server.ip, server.port.toInt()), server.uniqueId, server.properties.getOrDefault("proxy-restricted", "false").toBoolean())
+
+        val info = ProxyServer.getInstance().constructServerInfo(
+            id,
+            InetSocketAddress.createUnresolved(server.ip, server.port),
+            server.serverId,
+            server.properties.getOrDefault("proxy-restricted", "false").toString().toBoolean()
+        )
 
         ProxyServer.getInstance().servers[id] = info
-        registered.add(server)
+        servers[server.serverId] = server
     }
 
-    override fun unregister(server: Server) {
-        val proxy = ProxyServer.getInstance()
-
-        proxy.servers.removeServer(server.uniqueId)
-        registered.remove(server)
+    override fun unregister(server: RegisteredServer) {
+        ProxyServer.getInstance().servers.removeServer(server.serverId)
+        servers.remove(server.serverId)
     }
 
     private fun MutableMap<String, ServerInfo>.removeServer(uniqueId: String): ServerInfo? {

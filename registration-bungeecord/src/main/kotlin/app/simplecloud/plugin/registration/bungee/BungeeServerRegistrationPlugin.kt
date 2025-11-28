@@ -1,6 +1,6 @@
 package app.simplecloud.plugin.registration.bungee
 
-import app.simplecloud.controller.api.ControllerApi
+import app.simplecloud.api.CloudApi
 import app.simplecloud.plugin.registration.shared.ServerRegistrationPlugin
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +19,7 @@ class BungeeServerRegistrationPlugin : Plugin() {
         )
     }
 
-    private val api = ControllerApi.createCoroutineApi()
+    private val api = CloudApi.create()
 
     override fun onEnable() {
         cleanupServers()

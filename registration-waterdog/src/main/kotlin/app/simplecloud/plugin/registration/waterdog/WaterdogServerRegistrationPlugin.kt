@@ -1,6 +1,6 @@
 ﻿package app.simplecloud.plugin.registration.waterdog
 
-import app.simplecloud.controller.api.ControllerApi
+import app.simplecloud.api.CloudApi
 import app.simplecloud.plugin.registration.shared.ServerRegistrationPlugin
 import dev.waterdog.waterdogpe.network.serverinfo.BedrockServerInfo
 import dev.waterdog.waterdogpe.plugin.Plugin
@@ -17,10 +17,10 @@ class WaterdogServerRegistrationPlugin : Plugin() {
     val serverRegistration = ServerRegistrationPlugin(
         logger,
         dataFolder.toPath(),
-        VelocityServerRegisterer(this, proxy)
+        WaterdogServerRegisterer(this, proxy)
     )
 
-    private val api = ControllerApi.createCoroutineApi()
+    private val api = CloudApi.create()
 
     override fun onEnable() {
         cleanupServers()

@@ -1,31 +1,35 @@
 ﻿package app.simplecloud.plugin.registration.waterdog
 
-import app.simplecloud.controller.shared.server.Server
+import app.simplecloud.plugin.registration.shared.RegisteredServer
 import app.simplecloud.plugin.registration.shared.ServerRegisterer
 import dev.waterdog.waterdogpe.ProxyServer
 import dev.waterdog.waterdogpe.network.serverinfo.BedrockServerInfo
 import java.net.InetSocketAddress
 
-class VelocityServerRegisterer(
+class WaterdogServerRegisterer(
     private val plugin: WaterdogServerRegistrationPlugin,
-    private val proxy: ProxyServer
-): ServerRegisterer {
+    private val proxy: ProxyServer,
+) : ServerRegisterer {
 
-    private val servers = mutableListOf<Server>()
+    private val servers = mutableMapOf<String, RegisteredServer>()
 
-    override fun getRegistered(): List<Server> {
+    override fun getRegistered(): Map<String, RegisteredServer> {
         return servers
     }
 
-    override fun register(server: Server) {
-        val info = BedrockServerInfo(plugin.serverRegistration.parseServerId(server), InetSocketAddress.createUnresolved(server.ip, server.port.toInt()), InetSocketAddress.createUnresolved(server.ip, server.port.toInt()))
+    override fun register(server: RegisteredServer) {
+        val info = BedrockServerInfo(
+            plugin.serverRegistration.parseServerId(server),
+            InetSocketAddress.createUnresolved(server.ip, server.port),
+            InetSocketAddress.createUnresolved(server.ip, server.port)
+        )
         proxy.registerServerInfo(info)
-        servers.add(server)
+        servers[server.serverId] = server
     }
 
-    override fun unregister(server: Server) {
+    override fun unregister(server: RegisteredServer) {
         proxy.removeServerInfo(plugin.serverRegistration.parseServerId(server))
-        servers.remove(server)
+        servers.remove(server.serverId)
     }
 
 }
