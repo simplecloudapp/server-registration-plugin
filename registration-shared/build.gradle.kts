@@ -4,6 +4,6 @@ dependencies {
 //        exclude(group = "org.jetbrains.kotlinx")
     }
 
-    api(libs.simplecloud.api)
+    compileOnly(libs.simplecloud.api)
     implementation(libs.kotlin.coroutines)
 }
