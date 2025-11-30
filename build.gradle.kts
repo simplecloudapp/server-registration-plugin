@@ -15,7 +15,6 @@ allprojects {
 
     repositories {
         mavenCentral()
-        mavenLocal()
         maven("https://repo.simplecloud.app/snapshots")
         maven("https://oss.sonatype.org/content/repositories/snapshots")
         maven("https://libraries.minecraft.net")

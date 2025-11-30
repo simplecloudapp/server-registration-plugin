@@ -23,7 +23,8 @@ class ServerRegistrationPlugin(
 
     private var config: ServerRegistrationConfig = ServerRegistrationConfig(
         ignoreServerGroups = listOf(),
-        serverNamePattern = "%GROUP%-%NUMERICAL_ID%",
+        serverNamePattern = "%NAME%-%NUMERICAL_ID%",
+        persistentServerNamePattern = "%NAME%",
         additionalServers = listOf()
     )
 
@@ -65,7 +66,7 @@ class ServerRegistrationPlugin(
 
         api.event().server().onStateChanged { event ->
             val server = event.server ?: return@onStateChanged
-            if (server.serverGroup?.type != GroupServerType.SERVER) return@onStateChanged
+            if (server.serverBase?.type != GroupServerType.SERVER) return@onStateChanged
             if (event.newState == ServerState.AVAILABLE && event.oldState != ServerState.AVAILABLE) {
                 register(convertToRegisteredServer(server))
             }
@@ -75,8 +76,6 @@ class ServerRegistrationPlugin(
             val server = event.server ?: return@onStopped
             unregister(convertToRegisteredServer(server))
         }
-
-        // TODO: Persistent Servers
     }
 
     private fun loadConfig(file: File) {
@@ -114,7 +113,8 @@ class ServerRegistrationPlugin(
         var toReturn = config.serverNamePattern
 
         val placeholders = mutableMapOf(
-            "%GROUP%" to server.serverGroupName,
+            "%GROUP%" to server.serverBaseName,
+            "%NAME%" to server.serverBaseName,
             "%NUMERICAL_ID%" to server.numericalId.toString(),
             "%ID%" to server.serverId,
         )
@@ -152,7 +152,7 @@ class ServerRegistrationPlugin(
             numericalId = server.numericalId,
             ip = server.ip!!,
             port = server.port!!,
-            serverGroupName = server.serverGroup!!.name!!,
+            serverBaseName = server.serverBase!!.name!!,
             properties = server.properties ?: emptyMap(),
             blueprintConfigurator = server.blueprint?.configurator
         )
