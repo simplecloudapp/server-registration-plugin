@@ -12,7 +12,7 @@ data class ServerRegistrationConfig(
 
 @ConfigSerializable
 data class RegistrationServer(
-    val name: String,
-    val address: String,
-    val port: Long
+    val name: String = "",
+    val address: String = "",
+    val port: Long = 0L
 )

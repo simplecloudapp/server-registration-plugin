@@ -45,9 +45,11 @@ class VelocityServerRegistrationPlugin @Inject constructor(
         CoroutineScope(Dispatchers.IO).launch {
             serverRegistration.start(api)
         }
+
         serverRegistration.getConfig().additionalServers.forEach {
             val serverInfo = ServerInfo(it.name, InetSocketAddress.createUnresolved(it.address, it.port.toInt()))
             server.registerServer(serverInfo)
+            logger.info("Additional server ${serverInfo.name} has been registered!")
         }
     }
 

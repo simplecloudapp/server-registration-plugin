@@ -21,19 +21,12 @@ class ServerRegistrationPlugin(
     private val registerer: ServerRegisterer,
 ) {
 
-    private var config: ServerRegistrationConfig = ServerRegistrationConfig(
-        ignoreServerGroups = listOf(),
-        serverNamePattern = "%NAME%-%NUMERICAL_ID%",
-        persistentServerNamePattern = "%NAME%",
-        additionalServers = listOf()
-    )
+    private val config: ServerRegistrationConfig = loadConfig(File(dataDirectory.toFile(), "config.yml"))
 
     suspend fun start(api: CloudApi) {
         logger.info("Initializing v3 server registration plugin...")
 
         registerPubSubListener(api)
-
-        loadConfig(File(dataDirectory.toFile(), "config.yml"))
 //        val serversByType = api.server().getServersByType(ServerType.SERVER)
 //        logger.info("Found ${serversByType.size} servers")
 //        serversByType.filter { it.state == ServerState.AVAILABLE }.forEach(::register)
@@ -78,7 +71,7 @@ class ServerRegistrationPlugin(
         }
     }
 
-    private fun loadConfig(file: File) {
+    private fun loadConfig(file: File): ServerRegistrationConfig {
         val loader = YamlConfigurationLoader.builder()
             .file(file)
             .nodeStyle(NodeStyle.BLOCK)
@@ -87,22 +80,21 @@ class ServerRegistrationPlugin(
                     it.registerAnnotatedObjects(objectMapperFactory()).build()
                 }
             }
-            .build()
+            .build()!!
+        val node = loader.load()
 
-        var replace = false
         if (!file.exists()) {
-            replace = true
             Files.createDirectories(file.parentFile.toPath())
             Files.createFile(file.toPath())
-        }
 
-        val node = loader.load()
-        if (replace) {
-            config.toNode(node)
+            val config = ServerRegistrationConfig()
+            node.set(config)
             loader.save(node)
+
+            return config
         }
 
-        config = node.get<ServerRegistrationConfig>() ?: return
+        return node.get(ServerRegistrationConfig::class.java) ?: throw IllegalStateException("Server registration config could not be found")
     }
 
     fun getConfig(): ServerRegistrationConfig {
