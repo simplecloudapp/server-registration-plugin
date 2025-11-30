@@ -7,6 +7,7 @@ data class RegisteredServer(
     val port: Int,
     val serverBaseName: String,
     val properties: Map<String, Any>,
-    val blueprintConfigurator: String?
+    val blueprintConfigurator: String?,
+    val persistent: Boolean,
 )
 

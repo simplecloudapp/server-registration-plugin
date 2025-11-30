@@ -2,7 +2,7 @@
 kotlin = "2.1.20"
 kotlin-coroutines = "1.10.2"
 shadow = "8.3.6"
-simplecloud-api = "0.1.0-platform.2-dev.1764500281869-2fdd00d"
+simplecloud-api = "0.1.0-platform.2-dev.1764512836044-875e3e8"
 bungeecord = "1.21-R0.4"
 configurate = "4.1.2"
 minotaur = "2.8.7"

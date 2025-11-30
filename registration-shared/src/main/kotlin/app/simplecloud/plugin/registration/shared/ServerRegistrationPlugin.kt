@@ -110,7 +110,7 @@ class ServerRegistrationPlugin(
     }
 
     fun parseServerId(server: RegisteredServer): String {
-        var toReturn = config.serverNamePattern
+        var toReturn = if (!server.persistent) config.serverNamePattern else config.persistentServerNamePattern
 
         val placeholders = mutableMapOf(
             "%GROUP%" to server.serverBaseName,
@@ -154,7 +154,8 @@ class ServerRegistrationPlugin(
             port = server.port!!,
             serverBaseName = server.serverBase!!.name!!,
             properties = server.properties ?: emptyMap(),
-            blueprintConfigurator = server.blueprint?.configurator
+            blueprintConfigurator = server.blueprint?.configurator,
+            persistent = server.isFromPersistentServer
         )
     }
 
