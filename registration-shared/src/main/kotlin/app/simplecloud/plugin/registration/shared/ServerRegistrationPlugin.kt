@@ -94,7 +94,8 @@ class ServerRegistrationPlugin(
             return config
         }
 
-        return node.get(ServerRegistrationConfig::class.java) ?: throw IllegalStateException("Server registration config could not be found")
+        return node.get(ServerRegistrationConfig::class.java)
+            ?: throw IllegalStateException("Server registration config could not be found")
     }
 
     fun getConfig(): ServerRegistrationConfig {
@@ -127,6 +128,10 @@ class ServerRegistrationPlugin(
             return
         }
 
+        if (isIgnored(server)) {
+            return
+        }
+
         logger.info("Registering server ${server.serverId} (${parseServerId(server)})...")
         registerer.register(server)
     }
@@ -151,5 +156,13 @@ class ServerRegistrationPlugin(
         )
     }
 
-}
+    private fun isIgnored(server: RegisteredServer): Boolean {
+        val ignored = config.ignoreServerGroupsAndPersistentServers
+        if (ignored.isEmpty()) {
+            return false
+        }
 
+        return server.serverBaseName in ignored || server.serverId in ignored
+    }
+
+}

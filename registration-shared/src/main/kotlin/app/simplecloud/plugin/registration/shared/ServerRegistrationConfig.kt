@@ -6,7 +6,7 @@ import org.spongepowered.configurate.objectmapping.ConfigSerializable
 data class ServerRegistrationConfig(
     val serverNamePattern: String = "%NAME%-%NUMERICAL_ID%",
     val persistentServerNamePattern: String = "%NAME%",
-    val ignoreServerGroups: List<String> = listOf(),
+    val ignoreServerGroupsAndPersistentServers: List<String> = listOf(),
     val additionalServers: List<RegistrationServer> = listOf()
 )
 
