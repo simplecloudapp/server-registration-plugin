@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> **Replaced:** use [Server Connection](https://github.com/simplecloudapp/server-connection-plugin) instead. It includes server registration. This repository is archived.
+
 # Server Registration Plugin
 
 ![Banner][banner]
