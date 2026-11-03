@@ -1,5 +1,5 @@
 > [!IMPORTANT]
-> **Replaced:** use [Server Connection](https://github.com/simplecloudapp/server-connection-plugin) instead. It includes server registration. This repository is archived.
+> **Replaced:** use [Server Connection](https://github.com/simplecloudapp/simplecloud-plugins/tree/main/proxy/server-connection) instead. It includes server registration. This repository is archived.
 
 # Server Registration Plugin
 
